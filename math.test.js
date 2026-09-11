@@ -5,7 +5,7 @@ const { add } = require('./math');
 
 // Test: normal addition
 test('add() should return the sum of two numbers', () => {
-  assert.strictEqual(add(2, 3), 5);
+  assert.strictEqual(add(2, 3), 5); 
 });
 
 // Test: type validation
