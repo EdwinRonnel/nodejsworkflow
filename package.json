@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive test"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/EdwinRonnel/nodejsworkflow/issues"
   },
-  "homepage": "https://github.com/EdwinRonnel/nodejsworkflow#readme"
+  "homepage": "https://github.com/EdwinRonnel/nodejsworkflow#readme",
+  "devDependencies": {
+    "jest": "^30.5.1"
+  }
 }
