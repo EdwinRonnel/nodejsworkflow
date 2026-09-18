@@ -9,6 +9,11 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  contents: read    # Permission to read repository files
+  pages: write      # Permission to deploy to GitHub Pages
+  id-token: write
+
 
 # "Jobs": The actual work that gets done
 # A workflow can have multiple jobs that run in parallel or sequentially
