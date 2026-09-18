@@ -9,23 +9,72 @@ on:
   pull_request:
     branches: [ "main" ]
 
+
+# "Jobs": The actual work that gets done
+# A workflow can have multiple jobs that run in parallel or sequentially
 jobs:
+
+  # BUILD JOB: Prepares and builds the application
   build:
 
+    # "Runner": What operating system should this job run on?
+    # ubuntu-latest is a virtual machine provided by GitHub
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [18.x, 20.x, 22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
+    # "Steps": Individual tasks that run one after another
     steps:
-    - uses: actions/checkout@v4
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    - run: npm ci
-    - run: npm run build --if-present
-    - run: npm test
+      # Step 1: Download the repository code to the runner
+      - name: Checkout repository
+        uses: actions/checkout@v5   # "Action": pre-built set of jobs/steps. This one downloads your repo
+
+      # Step 2: Install Node.js on the runner
+      # Your React app needs Node.js to build and run
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          
+      # Step 3: Install all the packages your project needs
+      # This reads package.json and installs dependencies via npm
+      # Better to use npm ci, but for this, we need to ignore package-lock.json to avoid accessing Manulife's artifactory, since the runners aren't self-hosted and lack network access
+      - name: Install dependencies
+        run: npm install --no-package-lock 
+
+      # Step 4: Create the production-ready version of your app
+      # This compiles your React code into optimized and plain HTML, CSS, and JS files
+      - name: Build project
+        run: npm run build
+
+      - name: Test project
+        run: npm test
+
+      # Step 5: Prepare GitHub Pages for deployment
+      # This configures the deployment environment
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      # Step 6: Package the built files for deployment
+      # The 'dist' folder contains your compiled React app
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+  deploy:
+    # Environment: Where and how should this be deployed?
+    environment:
+      name: github-pages                              # Deploy to GitHub Pages
+      url: ${{ steps.deployment.outputs.page_url }}   # The URL where your site will be live
+    runs-on: ubuntu-latest
+
+    # Dependencies: This job won't start until the build job finishes successfully
+    needs: build
+
+    # Condition: Only deploy if we're on the main branch to prevent accidental deployments from other branches
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      # Deploy the uploaded files to GitHub Pages
+      # This makes your website live and accessible to the public
+      - name: Deploy to GitHub Pages
+        id: deployment    # Give this step an ID so other steps can reference it
+        uses: actions/deploy-pages@v4
